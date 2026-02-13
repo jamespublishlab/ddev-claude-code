@@ -45,6 +45,71 @@ ddev exec gh --version        # GitHub CLI version
 ddev exec 'echo $GH_TOKEN'   # Confirm token injection
 ```
 
+## Authentication
+
+The addon supports two authentication methods. The pre-start hook automatically captures tokens from your host and injects them into the container — no manual env var setup required.
+
+### Option 1: OAuth Token (recommended)
+
+Uses your Claude Pro/Max subscription allowance — no additional API costs.
+
+1. **Install Claude Code on your host:**
+
+   ```bash
+   npm install -g @anthropic-ai/claude-code
+   ```
+
+2. **Run `claude` once to authenticate:**
+
+   ```bash
+   claude
+   ```
+
+   This opens a browser window where you sign in with your Anthropic account. On completion, Claude saves your OAuth credentials (access token + refresh token) to `~/.claude/.credentials.json`.
+
+3. **Install the addon and restart:**
+
+   ```bash
+   ddev add-on get jamespublishlab/ddev-claude-code
+   ddev restart
+   ```
+
+   The pre-start hook reads the token from `~/.claude/.credentials.json` and sets `CLAUDE_CODE_OAUTH_TOKEN` in the container automatically.
+
+> **Note:** OAuth access tokens expire after ~1 hour. Because `~/.claude` is volume-mounted into the container, Claude Code can auto-refresh using the refresh token stored in `~/.claude/.credentials.json`. If you experience auth failures during long sessions, run `ddev restart` to re-capture a fresh token.
+
+### Option 2: API Key
+
+Uses per-token API billing — simpler but costs more than a subscription.
+
+1. **Get an API key** from [console.anthropic.com](https://console.anthropic.com/)
+
+2. **Add it to `.ddev/.env.tokens`:**
+
+   ```bash
+   echo "ANTHROPIC_API_KEY=sk-ant-api03-..." >> .ddev/.env.tokens
+   ```
+
+   > Do **not** set both `ANTHROPIC_API_KEY` and `CLAUDE_CODE_OAUTH_TOKEN` — they conflict and Claude will throw an auth error.
+
+3. **Restart:** `ddev restart`
+
+### GitHub CLI
+
+The addon also captures your host's `gh auth token` for GitHub integration. Authenticate on your host first:
+
+```bash
+gh auth login
+```
+
+### Verifying authentication
+
+```bash
+ddev exec 'echo $CLAUDE_CODE_OAUTH_TOKEN'   # Should show your OAuth token
+ddev exec 'echo $GH_TOKEN'                  # Should show your GitHub token
+ddev claude --version                        # Should print version without auth errors
+```
+
 ## How It Works
 
 1. **Pre-start hook** (`config.claude-code.yaml`): Captures your host's `gh auth token` and Claude OAuth token into `.ddev/.env.tokens`
