@@ -1,0 +1,14 @@
+#ddev-generated
+services:
+  web:
+    env_file:
+      - .env.tokens
+    volumes:
+      - type: bind
+        source: ~/.claude
+        target: /home/${USER}/.claude
+        consistency: cached
+      - type: bind
+        source: ~/.config/gh
+        target: /home/${USER}/.config/gh
+        consistency: cached

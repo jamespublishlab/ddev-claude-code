@@ -1,0 +1,28 @@
+name: claude-code
+
+ddev_version_constraint: '>= v1.23.0'
+
+pre_install_actions:
+  - |
+    if [ ! -d "${HOME}/.claude" ]; then
+      echo "⚠️  ~/.claude directory not found. Run 'claude' on your host first to initialize it."
+    fi
+
+project_files:
+  - docker-compose.claude-code.yaml
+  - config.claude-code.yaml
+  - web-build/Dockerfile.claude-code
+
+global_files:
+  - commands/web/claude
+  - commands/web/claude-auto
+
+post_install_actions:
+  - |
+    for pattern in ".ddev/.env.tokens" ".ddev/.claude.json" ".ddev/.claude/"; do
+      grep -qF "$pattern" .gitignore 2>/dev/null || echo "$pattern" >> .gitignore
+    done
+
+removal_actions:
+  - |
+    rm -f .ddev/.env.tokens

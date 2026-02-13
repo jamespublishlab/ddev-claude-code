@@ -1,0 +1,7 @@
+#!/bin/bash
+#ddev-generated
+## Description: Run Claude Code CLI in autonomous mode (skips permission prompts)
+## Usage: claude-auto [args]
+## Example: ddev claude-auto "add unit tests for the auth module"
+
+claude --dangerously-skip-permissions "$@"

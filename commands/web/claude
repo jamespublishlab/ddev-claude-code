@@ -1,0 +1,7 @@
+#!/bin/bash
+#ddev-generated
+## Description: Run Claude Code CLI
+## Usage: claude [args]
+## Example: ddev claude --help
+
+claude "$@"
