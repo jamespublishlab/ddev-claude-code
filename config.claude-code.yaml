@@ -2,10 +2,23 @@
 hooks:
   pre-start:
     - exec-host: |
-        echo "GH_TOKEN=$(gh auth token 2>/dev/null)" > .ddev/.env.tokens
-        TOKEN=$(cat ~/.claude/setup-token 2>/dev/null || jq -r '.claudeAiOauth.accessToken // empty' ~/.claude/.credentials.json 2>/dev/null)
+        if command -v gh >/dev/null 2>&1; then
+          echo "GH_TOKEN=$(gh auth token 2>/dev/null)" > .ddev/.env.tokens
+        else
+          : > .ddev/.env.tokens
+        fi
+        TOKEN=""
+        if [ -f ~/.claude/setup-token ]; then
+          TOKEN=$(cat ~/.claude/setup-token 2>/dev/null)
+        elif command -v jq >/dev/null 2>&1 && [ -f ~/.claude/.credentials.json ]; then
+          TOKEN=$(jq -r '.claudeAiOauth.accessToken // empty' ~/.claude/.credentials.json 2>/dev/null)
+        else
+          echo "Warning: jq is not installed or Claude credentials file is missing; CLAUDE_CODE_OAUTH_TOKEN will not be set." >&2
+        fi
         if [ -n "$TOKEN" ]; then
           echo "CLAUDE_CODE_OAUTH_TOKEN=$TOKEN" >> .ddev/.env.tokens
+        else
+          echo "Warning: Failed to locate Claude Code OAuth token; CLAUDE_CODE_OAUTH_TOKEN will not be set." >&2
         fi
   post-start:
     - exec: |

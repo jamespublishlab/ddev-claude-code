@@ -8,7 +8,11 @@ services:
         source: ~/.claude
         target: /home/${USER}/.claude
         consistency: cached
+        bind:
+          create_host_path: false
       - type: bind
         source: ~/.config/gh
         target: /home/${USER}/.config/gh
         consistency: cached
+        bind:
+          create_host_path: false
